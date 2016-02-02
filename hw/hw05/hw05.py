@@ -75,15 +75,15 @@ def end(s):
 def weight(size):
     """Construct a weight of some size."""
     assert size > 0
-    "*** YOUR CODE HERE ***"
+    return tree(size, [])
 
 def size(w):
     """Select the size of a weight."""
-    "*** YOUR CODE HERE ***"
+    return root(w)
 
 def is_weight(w):
     """Whether w is a weight, not a mobile."""
-    "*** YOUR CODE HERE ***"
+    return is_leaf(w)
 
 def examples():
     t = mobile(side(1, weight(2)),
@@ -170,7 +170,13 @@ def with_totals(m):
               3
                 2
     """
-    "*** YOUR CODE HERE ***"
+    if is_weight(m):
+        return weight(size(m))
+    else:
+        b = []
+        for s in sides(m):
+            b.append(side(length(s), with_totals(end(s))))
+        return tree(total_weight(m), b)
 
 def balanced(m):
     """Return whether m is balanced.
@@ -188,7 +194,13 @@ def balanced(m):
     >>> balanced(mobile(side(1, w), side(1, v)))
     False
     """
-    "*** YOUR CODE HERE ***"
+    if is_weight(m):
+        return True
+    eval_balance = lambda s: total_weight(end(s)) * length(s)
+    ss = sides(m)
+    balance = (eval_balance(ss[0]) == eval_balance(ss[1]))
+    return balance and balanced(end(ss[0])) and balanced(end(ss[1]))
+    
 
 ############
 # Mutation #
@@ -217,7 +229,24 @@ def make_withdraw(balance, password):
     >>> w(10, 'l33t')
     "Your account is locked. Attempts: ['hwat', 'a', 'n00b']"
     """
-    "*** YOUR CODE HERE ***"
+    wrong_try = 0
+    wrong_pwd = []
+    def withdraw(amount, pwd):
+        nonlocal balance
+        nonlocal wrong_try
+        if wrong_try >= 3:
+            return "Your account is locked. Attempts: " + str(wrong_pwd)
+        elif not pwd == password:
+            wrong_try += 1
+            wrong_pwd.append(pwd)
+            return "Incorrect password"
+        elif amount > balance:
+            return "Insufficient funds"
+        else:
+            balance -= amount
+            return balance
+
+    return withdraw
 
 
 def make_joint(withdraw, old_password, new_password):
@@ -258,7 +287,18 @@ def make_joint(withdraw, old_password, new_password):
     >>> make_joint(w, 'hax0r', 'hello')
     "Your account is locked. Attempts: ['my', 'secret', 'password']"
     """
-    "*** YOUR CODE HERE ***"
+    def withdraw_wrapper(amount, password):
+        if password == new_password:
+            return withdraw(amount, old_password)
+        else:
+            return withdraw(amount, password)
+
+    response = withdraw(0, old_password)
+    if type(response) == str:
+        return response
+    else: 
+        return withdraw_wrapper
+
 
 
 ###########
@@ -290,7 +330,37 @@ class VendingMachine:
     >>> v.deposit(15)
     'Machine is out of stock. Here is your $15.'
     """
-    "*** YOUR CODE HERE ***"
+    def __init__(self, commodity, price):
+        self.commodity = commodity
+        self.price = price
+        self.stock = 0
+        self.balance = 0
+
+    def restock(self, amount):
+        self.stock += amount
+        return 'Current ' + self.commodity + ' stock: ' + str(self.stock)
+
+    def deposit(self, balance):
+        if self.stock:
+            self.balance += balance
+            return 'Current balance: $' + str(self.balance)
+        else:
+            return 'Machine is out of stock. Here is your $' + str(balance) + '.'
+
+    def vend(self):
+        if not self.stock:
+            return 'Machine is out of stock.'
+        elif self.balance < self.price:
+            return 'You must deposit $' + str(self.price - self.balance) + ' more.'
+        elif self.balance == self.price:
+            self.stock -= 1
+            self.balance = 0
+            return 'Here is your ' + self.commodity + '.'
+        else:
+            self.stock -= 1
+            change = self.balance - self.price
+            self.balance = 0
+            return 'Here is your ' + self.commodity + ' and $' + str(change) + ' change.'
 
 
 class MissManners:
@@ -324,7 +394,23 @@ class MissManners:
     >>> really_fussy.ask('please ask', 'please deposit', 10)
     'Current balance: $10'
     """
-    "*** YOUR CODE HERE ***"
+    def __init__(self, obj):
+        self.obj = obj
+
+    def ask(self, *args):
+        assert len(args) >= 1 
+        assert type(args[0]) == str
+        polite_cmd = args[0]
+        polite_cmd_split = polite_cmd.split(' ', 1)
+        if not polite_cmd_split[0] == 'please':
+            return 'You must learn to say please first.'
+        elif hasattr(self.obj, polite_cmd_split[1]):
+            if len(args) == 1:
+                return getattr(self.obj, polite_cmd_split[1])()
+            else:
+                return getattr(self.obj, polite_cmd_split[1])(*args[1:])
+        else:
+            return 'Thanks for asking, but I know not how to ' + polite_cmd_split[1] + '.'
 
 
 #############
