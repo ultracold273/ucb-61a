@@ -47,10 +47,12 @@
 
 
 (define (nodots s)
-  (if (= . (car s))
-	(nodots (cdr s))
-	(cons (car s) (nodots (cdr s)))
-	)
+  (cond 
+	((null? s) s)
+	((number? s) s)
+	((number? (cdr s)) (cons (nodots (car s)) (cons (cdr s) nil)))
+	(else (cons (nodots (car s)) (nodots (cdr s))))
+	  )
 )
 
 
