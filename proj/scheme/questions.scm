@@ -15,7 +15,8 @@
   )
 
 (define (zip pairs)
-  'REPLACE-THIS-LINE)
+  (list (map car pairs) (map cadr pairs))
+  )
 
 ;; Problem 18
 ;; Returns a list of two-element lists
@@ -34,7 +35,41 @@
 ;; List all ways to make change for TOTAL with DENOMS
 (define (list-change total denoms)
   ; BEGIN Question 19
-  'REPLACE-THIS-LINE
+  (define (concat x y)
+	(if (null? x) y
+	  (if (null? (cdr x)) (cons (car x) y)
+		(cons (car x) (concat (cdr x) y))
+		)
+	  )
+	)
+  (define (make-list total num)
+	(if (= total num)
+	  (list total)
+	  (cons num (make-list (- total num) num))
+	  )
+	)
+  (if (or (null? denoms) (= total 0)) (list nil)
+	(if (null? (cdr denoms)) 
+	  ; Return or not satisfy
+	  (if (= (modulo total (car denoms)) 0)
+		(cons (make-list total (car denoms)) nil)
+;		(make-list total (car denoms))
+		nil
+		)
+	  ; More
+	  (if (< total (car denoms))
+		(list-change total (cdr denoms))
+		 (let ((one (list-change total (cdr denoms))) (two (list-change (- total (car denoms)) denoms)))
+		 (cond
+		   ((and (null? one) (null? two)) nil)
+		   ((null? one) (cons-all (car denoms) two))
+		   ((null? two) one)
+		   (else (concat (cons-all (car denoms) two) one))
+		   )
+		 )
+	   )
+	  )
+	)
   )
   ; END Question 19
 
