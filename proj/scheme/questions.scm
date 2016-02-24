@@ -85,14 +85,19 @@
 
 ;; Converts all let special forms in EXPR into equivalent forms using lambda
 (define (analyze expr)
+  (define (analyze-seq subexpr)
+	(if (null? subexpr) nil
+	  (cons (analyze (car subexpr)) (analyze-seq (cdr subexpr)))
+	  )
+	)
   (cond ((atom? expr)
          ; BEGIN Question 20
-         'REPLACE-THIS-LINE
+		 expr
          ; END Question 20
          )
         ((quoted? expr)
          ; BEGIN Question 20
-         'REPLACE-THIS-LINE
+		 expr
          ; END Question 20
          )
         ((or (lambda? expr)
@@ -101,19 +106,24 @@
                (params (cadr expr))
                (body   (cddr expr)))
            ; BEGIN Question 20
-           'REPLACE-THIS-LINE
+		   (cons form (cons params (map analyze body)))
            ; END Question 20
            ))
         ((let? expr)
          (let ((values (cadr expr))
                (body   (cddr expr)))
            ; BEGIN Question 20
-           'REPLACE-THIS-LINE
+		   (let ((formals (map car values)) 
+				 (args (map analyze (map cadr values))))
+			 (cons (list 'lambda formals (analyze (car body))) args)
+			 )
            ; END Question 20
            ))
         (else
          ; BEGIN Question 20
-         'REPLACE-THIS-LINE
+		 (if (null? expr) nil
+		   (cons (car expr) (analyze-seq (cdr expr)))
+		 )
          ; END Question 20
          )))
 
