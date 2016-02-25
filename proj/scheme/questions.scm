@@ -125,13 +125,35 @@
 		   (cons (car expr) (analyze-seq (cdr expr)))
 		 )
          ; END Question 20
-         )))
+         ))
+  )
 
 ;; Problem 21 (optional)
 ;; Draw the hax image using turtle graphics.
+(define (repeat k fn) 
+  (if (> k 0)
+	(begin (fn) (repeat (- k 1) fn))
+	nil))
+
+(define (tri fn)
+  (repeat 3 (lambda () (fn) (rt 60))))
+
+(define (leg d k)
+  (fd (/ d 2))
+  (hax (/ d 2) (- k 1))
+  (penup)
+  (fd (/ d 2))
+  (rt 60)
+  (fd (/ d 2))
+  (pendown)
+  (fd (/ d 2))
+  )
+
 (define (hax d k)
   ; BEGIN Question 21
-  'REPLACE-THIS-LINE
-  )
+  (tri (lambda ()
+			  (if (= k 0) (begin (fd d) (rt 60) (fd d))
+				(leg d k)))))
+
   ; END Question 21
 
